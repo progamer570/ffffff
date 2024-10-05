@@ -423,12 +423,15 @@ async def send_manga_chapter(client: Client, chapter, chat_id):
 
     if env_vars["FNAME"]:
         try:
-            try: chap_num = re.search(r"Vol (\d+(?:\.\d+)?) Chapter (\d+(?:\.\d+)?)", chapter.name).group(2)
-            except: chap_num = re.search(r"(\d+(?:\.\d+)?)", chapter.name).group(1)
-            chap_name = clean(chapter.manga.name, 20)
-            ch_name = env_vars["FNAME"]
-            ch_name = ch_name.replace("{chap_num}", str(chap_num))
-            ch_name = ch_name.replace("{chap_name}", str(chap_name))
+            try:
+                chap_num = re.search(r"Vol (\d+(?:\.\d+)?) Chapter (\d+(?:\.\d+)?)", chapter.name).group(2)
+             except:
+                chap_num = re.search(r"(\d+(?:\.\d+)?)", chapter.name).group(1)
+             chap_num = chap_num.zfill(2) if int(float(chap_num)) < 10 else chap_num
+             chap_name = clean(chapter.manga.name, 20)
+             ch_name = env_vars["FNAME"]
+             ch_name = ch_name.replace("{chap_num}", str(chap_num))
+             ch_name = ch_name.replace("{chap_name}", str(chap_name))
         except Exception as e:
             print(e)
     else:
