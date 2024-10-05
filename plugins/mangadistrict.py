@@ -22,21 +22,21 @@ class MangaDistrictClient(MangaClient):
     def __init__(self, *args, name="MangaDistrict", **kwargs):
         super().__init__(*args, name=name, headers=self.pre_headers, **kwargs)
 
-    def mangas_from_page(self, page: bytes):
-        bs = BeautifulSoup(page, "html.parser")
+    def mangas_from_page(self, content):
+        soup = BeautifulSoup(content, 'html.parser')
+        container = soup.find("div", {"class": "container-class"})  # Update this with the correct class or tag
+        if container is None:
+            print("Container not found in the page.")
+            return [] 
+        try:
+            cards = container.find_all("div", {"class": "row c-tabs-item__content"})
+            if not cards:
+                print("No cards found in the container.")
+            return cards
+        except Exception as e:
+            print(f"An error occurred while fetching mangas: {e}")
+            return []
 
-        container = bs.find('div', {'class': 'tab-content-wrap'})
-
-        cards = container.find_all("div", {"class": "row c-tabs-item__content"})
-
-        mangas = [card.findNext('a') for card in cards]
-        names = [manga.get('title') for manga in mangas]
-        url = [manga.get("href") for manga in mangas]
-        images = [manga.findNext("img").get("src") for manga in mangas]
-
-        mangas = [MangaCard(self, *tup) for tup in zip(names, url, images)]
-
-        return mangas
     
     def chapters_from_page(self, page: bytes, manga: MangaCard = None):
         bs = BeautifulSoup(page, "html.parser")
