@@ -54,7 +54,10 @@ def set_webhook():
 def webhook():
     # Process the incoming Telegram webhook updates
     update = request.get_json()
-    bot.process_new_updates([update])  # Process the update in Pyrogram
+
+    # Pass the update to Pyrogram's Client using the `update` method
+    bot.update(update)
+    
     return "OK", 200
 
 # Run the Flask server
