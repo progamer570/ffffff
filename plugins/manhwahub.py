@@ -8,7 +8,7 @@ from bs4.element import PageElement
 from plugins.client import MangaClient, MangaCard, MangaChapter, LastChapter
 
 
-class ManhwazClient(MangaClient):
+class ManhwahubClient(MangaClient):
 
     base_url = urlparse("https://manhwahub.net/")
     search_url = base_url.geturl()
@@ -20,7 +20,7 @@ class ManhwazClient(MangaClient):
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0'
     }
 
-    def __init__(self, *args, name="Manhwaz18", **kwargs):
+    def __init__(self, *args, name="Manhwahub", **kwargs):
         super().__init__(*args, name=name, headers=self.pre_headers, **kwargs)
 
     def mangas_from_page(self, page: bytes):
