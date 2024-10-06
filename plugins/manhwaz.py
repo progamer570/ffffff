@@ -8,7 +8,7 @@ from bs4.element import PageElement
 from plugins.client import MangaClient, MangaCard, MangaChapter, LastChapter
 
 
-class Manga18fxClient(MangaClient):
+class ManhwazClient(MangaClient):
 
     base_url = urlparse("https://manhwahub.net/")
     search_url = base_url.geturl()
