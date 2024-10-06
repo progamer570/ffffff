@@ -453,20 +453,7 @@ async def send_manga_chapter(client: Client, chapter, chat_id):
                                                        f'Forward this message to the bot group to report the '
                                                        f'error.\n\n{error_caption}')
             media_docs.append(InputMediaDocument(pdf, thumb=thumb_path))
-
-    if options & OutputOptions.CBZ:
-        if chapter_file.cbz_id:
-            media_docs.append(InputMediaDocument(chapter_file.cbz_id))
-        else:
-            try:
-                cbz = await asyncio.get_running_loop().run_in_executor(None, fld2cbz, pictures_folder, ch_name)
-            except Exception as e:
-                logger.exception(f'Error creating cbz for {chapter.name} - {chapter.manga.name}\n{e}')
-                return await client.send_message(chat_id, f'There was an error making the cbz for this chapter. '
-                                                       f'Forward this message to the bot group to report the '
-                                                       f'error.\n\n{error_caption}')
-            media_docs.append(InputMediaDocument(cbz, thumb=thumb_path))
-
+            
     if len(media_docs) == 0:
         messages: list[Message] = await retry_on_flood(client.send_message)(chat_id, success_caption)
     else:
