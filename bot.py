@@ -407,20 +407,17 @@ async def send_manga_chapter(client: Client, chapter, chat_id):
 
     download = not chapter_file
     download = download or options & OutputOptions.PDF and not chapter_file.file_id
-    download = download or options & OutputOptions.CBZ and not chapter_file.cbz_id
-    download = download and options & ((1 << len(OutputOptions)) - 1) != 0
+    download = download and options & OutputOptions.PDF  # Only check for PDF download
 
     if download:
         pictures_folder = await chapter.client.download_pictures(chapter)
         if not chapter.pictures:
             return await client.send_message(chat_id,
-                                          f'There was an error parsing this chapter or chapter is missing' +
-                                          f', please check the chapter at the web\n\n{error_caption}')
+                                             f'There was an error parsing this chapter or chapter is missing' +
+                                             f', please check the chapter at the web\n\n{error_caption}')
         thumb_path = "thumb.jpg"
 
     chapter_file = chapter_file or ChapterFile(url=chapter.url)
-
-    #success_caption += f'[Read on website]({chapter.get_url()})'
 
     if env_vars["FNAME"]:
         try:
@@ -453,22 +450,18 @@ async def send_manga_chapter(client: Client, chapter, chat_id):
                                                        f'Forward this message to the bot group to report the '
                                                        f'error.\n\n{error_caption}')
             media_docs.append(InputMediaDocument(pdf, thumb=thumb_path))
-            
+
     if len(media_docs) == 0:
         messages: list[Message] = await retry_on_flood(client.send_message)(chat_id, success_caption)
     else:
         media_docs[-1].caption = success_caption
         messages: list[Message] = await retry_on_flood(client.send_media_group)(chat_id, media_docs)
 
-    # Save file ids
     if download and media_docs:
         for message in [x for x in messages if x.document]:
             if message.document.file_name.endswith('.pdf'):
                 chapter_file.file_id = message.document.file_id
                 chapter_file.file_unique_id = message.document.file_unique_id
-            elif message.document.file_name.endswith('.cbz'):
-                chapter_file.cbz_id = message.document.file_id
-                chapter_file.cbz_unique_id = message.document.file_unique_id
 
     if download:
         shutil.rmtree(pictures_folder, ignore_errors=True)
