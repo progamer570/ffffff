@@ -407,7 +407,7 @@ async def send_manga_chapter(client: Client, chapter, chat_id):
 
     download = not chapter_file
     download = download or options & OutputOptions.PDF and not chapter_file.file_id
-    download = download and options & OutputOptions.PDF  # Only check for PDF download
+    download = download and options & OutputOptions.PDF
 
     if download:
         pictures_folder = await chapter.client.download_pictures(chapter)
@@ -426,14 +426,14 @@ async def send_manga_chapter(client: Client, chapter, chat_id):
             except:
                 chap_num = re.search(r"(\d+(?:\.\d+)?)", chapter.name).group(1)
             chap_num = chap_num.zfill(2) if int(float(chap_num)) < 10 else chap_num
-            chap_name = clean(chapter.manga.name, 20)
+            chap_name = chapter.manga.name
             ch_name = env_vars["FNAME"]
             ch_name = ch_name.replace("{chap_num}", str(chap_num))
             ch_name = ch_name.replace("{chap_name}", str(chap_name))
         except Exception as e:
             print(e)
     else:
-        ch_name = clean(f'{chapter.name} - {clean(chapter.manga.name, 25)}', 45)
+        ch_name = f'{chapter.name} - {chapter.manga.name}'
         
     success_caption = f'<blockquote><b>{ch_name}</b></blockquote>'
     media_docs = []
