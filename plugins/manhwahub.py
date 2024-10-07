@@ -15,7 +15,6 @@ class ManhwahubClient(MangaClient):
     search_param = 'searchword'
     updates_url = base_url.geturl()
 
-
     pre_headers = {
         'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:97.0) Gecko/20100101 Firefox/97.0'
     }
@@ -25,8 +24,13 @@ class ManhwahubClient(MangaClient):
 
     def mangas_from_page(self, page: bytes):
         bs = BeautifulSoup(page, "html.parser")
-
+        
+        # Check if the container exists
         container = bs.find('div', {'class': 'listupd'})
+        
+        if container is None:
+            print("No container found with class 'listupd'. Check if the page structure has changed.")
+            return []  # Return an empty list if no container is found
 
         cards = container.find_all("div", {"class": "thumb-manga"})
 
@@ -35,15 +39,17 @@ class ManhwahubClient(MangaClient):
         url = [self.search_url + manga.get("href") for manga in mangas]
         images = [manga.findNext("img").get("src") for manga in mangas]
 
-        mangas = [MangaCard(self, *tup) for tup in zip(names, url, images)]
-
-        return mangas
+        return [MangaCard(self, *tup) for tup in zip(names, url, images)]
     
     def chapters_from_page(self, page: bytes, manga: MangaCard = None):
         bs = BeautifulSoup(page, "html.parser")
         
         container = bs.find("ul", {"class": "row-content-chapter"})
         
+        if container is None:
+            print("No container found for chapters. Check if the page structure has changed.")
+            return []
+
         lis = container.find_all("li", {"class": "a-h"})
         
         items = [li.findNext('a') for li in lis]
@@ -62,6 +68,10 @@ class ManhwahubClient(MangaClient):
         bs = BeautifulSoup(page, "html.parser")
 
         manga_items = bs.find_all("h3", {"class": "tt mycover"})
+
+        if not manga_items:
+            print("No recent updates found. Check if the page structure has changed.")
+            return {}
 
         urls = dict()
 
@@ -83,6 +93,10 @@ class ManhwahubClient(MangaClient):
         
         cards = bs.findAll("div", {"class": "page-break"})
         
+        if not cards:
+            print("No pages found for pictures. Check if the page structure has changed.")
+            return []
+
         images_url = [quote(containers.findNext("img").get("src"), safe=':/%') for containers in cards]
         
         return images_url
@@ -97,13 +111,22 @@ class ManhwahubClient(MangaClient):
 
         content = await self.get_url(request_url)
 
+        # Ensure valid content is returned before parsing
+        if content is None:
+            print("No content received from the search. Please check your request or website structure.")
+            return []
+
         return self.mangas_from_page(content)
 
     async def get_chapters(self, manga_card: MangaCard, page: int = 1) -> List[MangaChapter]:
-
         request_url = f'{manga_card.url}'
 
         content = await self.get_url(request_url)
+
+        # Ensure valid content is returned before parsing
+        if content is None:
+            print(f"No content found for {manga_card.url}. Please check the URL or the website.")
+            return []
 
         return self.chapters_from_page(content, manga_card)[(page - 1) * 20:page * 20]
 
@@ -113,6 +136,10 @@ class ManhwahubClient(MangaClient):
         request_url = f'{manga_card.url}'
 
         content = await self.get_url(request_url)
+
+        if content is None:
+            print(f"No content found for {manga_card.url}. Please check the URL or the website.")
+            return
 
         for chapter in self.chapters_from_page(content, manga_card):
             yield chapter
