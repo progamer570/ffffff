@@ -54,16 +54,27 @@ def unicode_to_latin1(s):
     return s
 
 
-def img2pdf(files: List[Path], out: Path):
+def img2pdf(files: List[Path], out: Path, thumb_path: Path):
     pdf = FPDF('P', 'pt')
+
+    thumb_path = "thumb.jpg"
+    
+    thumb_bytes, width, height = pil_image(thumb_path)
+    pdf.add_page(format=(width, height))
+    pdf.image(thumb_bytes, 0, 0, width, height)
+    thumb_bytes.close()
+
     for imageFile in files:
         img_bytes, width, height = pil_image(imageFile)
         
         pdf.add_page(format=(width, height))
-
         pdf.image(img_bytes, 0, 0, width, height)
-
         img_bytes.close()
+
+    thumb_bytes, width, height = pil_image(thumb_path)
+    pdf.add_page(format=(width, height))
+    pdf.image(thumb_bytes, 0, 0, width, height)
+    thumb_bytes.close()
 
     pdf.set_title(unicode_to_latin1(out.stem))
     pdf.output(out, "F")
