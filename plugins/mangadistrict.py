@@ -2,10 +2,6 @@ from typing import List, AsyncIterable
 from urllib.parse import urlparse, urljoin, quote, quote_plus
 import re
 
-from bs4 impofrom typing import List, AsyncIterable
-from urllib.parse import urlparse, urljoin, quote, quote_plus
-import re
-
 from bs4 import BeautifulSoup
 from bs4.element import PageElement
 
